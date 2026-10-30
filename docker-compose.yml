@@ -1,0 +1,13 @@
+services:
+  nexusai:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - nexusai_data:/app/data
+    environment:
+      DATABASE_PATH: /app/data/nexusai.db
+volumes:
+  nexusai_data:
