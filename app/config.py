@@ -12,5 +12,6 @@ class Settings:
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
     anthropic_model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5").strip()
     llm_timeout_seconds = float(os.getenv("LLM_TIMEOUT_SECONDS", "20"))
+    admin_token = os.getenv("NEXUSAI_ADMIN_TOKEN", "").strip()
 
 settings = Settings()

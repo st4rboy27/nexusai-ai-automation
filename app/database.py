@@ -97,3 +97,11 @@ def list_requests(*, category: str | None = None, urgency: str | None = None,
 
 def all_requests() -> list[dict[str, Any]]:
     return list_requests(limit=200000, offset=0)
+def delete_request(request_id: int) -> bool:
+    with connection() as conn:
+        cursor = conn.execute(
+            "DELETE FROM requests WHERE id = ?",
+            (request_id,)
+        )
+        conn.commit()
+        return cursor.rowcount > 0

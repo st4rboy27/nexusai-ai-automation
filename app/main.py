@@ -4,7 +4,8 @@ import io
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Header
+import secrets
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 try:
@@ -12,7 +13,7 @@ try:
 except ImportError:  # permite executar o modo local antes de instalar o SDK
     Anthropic = None  # type: ignore[assignment,misc]
 from app.config import settings, PROJECT_ROOT
-from app.database import connection, get_request, list_requests, all_requests
+from app.database import connection, get_request, list_requests, all_requests, delete_request
 from app.schemas import RequestIn, RequestOut
 from app.service import process_request
 
@@ -60,7 +61,32 @@ def get_request_by_id(ticket_id: int):
     if not item:
         raise HTTPException(status_code=404, detail="Solicitação não encontrada")
     return item
+@app.delete("/api/requests/{ticket_id}")
+def delete_request_by_id(
+    ticket_id: int,
+    x_admin_token: str | None = Header(default=None)
+):
+    if not settings.admin_token or not secrets.compare_digest(
+        x_admin_token or "",
+        settings.admin_token
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Token administrativo inválido"
+        )
 
+    deleted = delete_request(ticket_id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="Solicitação não encontrada"
+        )
+
+    return {
+        "message": "Solicitação excluída com sucesso",
+        "id": ticket_id
+    }
 @app.get("/api/reports/summary")
 def report_summary():
     rows = all_requests()
